@@ -4,8 +4,6 @@
 ## Version: 1.0
 ## Author: YourName
 ## Notes: Shows party members' damage in floating combat text with blue color
-## SavedVariables: DamageBrotherDB
-
 DamageBrother.lua
 ClassIcons.lua
 
