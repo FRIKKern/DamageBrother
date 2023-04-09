@@ -1,6 +1,8 @@
+print "DamageBrother loaded"
+
 local frame = CreateFrame("Frame")
 local damageFrame = CreateFrame("ScrollingMessageFrame", nil, UIParent)
-local optionsPanelCreated = false
+
 damageFrame:SetPoint("CENTER", 0, 100)
 damageFrame:SetSize(400, 200)
 damageFrame:SetFont("Fonts\\FRIZQT__.TTF", 14, "OUTLINE")
@@ -10,34 +12,8 @@ damageFrame:SetFadeDuration(2)
 damageFrame:SetTimeVisible(5)
 damageFrame:SetJustifyH("CENTER")
 
-local function isPlayerInParty(playerName)
-    for i = 1, GetNumGroupMembers() do
-        local name, _, _, _, _, class = GetRaidRosterInfo(i)
-        if playerName == name then
-            return true, class
-        end
-    end
-    return false
-end
 
 
-local function isPlayerInParty(playerName)
-    if not IsInGroup() then
-        if DamageBrotherDB.enableSolo and playerName == UnitName("player") then
-            return true, select(2, UnitClass("player"))
-        else
-            return false
-        end
-    end
-
-    for i = 1, GetNumGroupMembers() do
-        local name, _, _, _, _, class = GetRaidRosterInfo(i)
-        if playerName == name then
-            return true, class
-        end
-    end
-    return false
-end
 local function OnCombatLogEvent(self, event, ...)
     local timestamp, eventType, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags, arg12, arg13, arg14, arg15, arg16 = CombatLogGetCurrentEventInfo()
 
@@ -57,21 +33,22 @@ local function OnCombatLogEvent(self, event, ...)
                 missType = arg16
             end
             if spellId then
-                _, _, spellTexture = GetSpellInfo(spellId)
+                _, _, spellTexture = GetSpellTexture(spellId)
             end
             local classIcon = getClassIcon(class)
+            local classColor = getClassColor(class)
             local damageText
             if amount and amount > 0 then
                 if spellTexture then
-                    damageText = string.format("|T%s:0|t |T%s:0|t %d", classIcon, spellTexture, amount)
+                    damageText = string.format("|T%s:0|t |T%s:0|t |cff%02x%02x%02x%d|r", classIcon, spellTexture, classColor.r * 255, classColor.g * 255, classColor.b * 255, amount)
                 else
-                    damageText = string.format("|T%s:0|t %d", classIcon, amount)
+                    damageText = string.format("|T%s:0|t |cff%02x%02x%02x%d|r", classIcon, classColor.r * 255, classColor.g * 255, classColor.b * 255, amount)
                 end
             elseif missType then
                 if spellTexture then
-                    damageText = string.format("|T%s:0|t |T%s:0|t %s", classIcon, spellTexture, missType)
+                    damageText = string.format("|T%s:0|t |T%s:0|t |cff%02x%02x%02x%s|r", classIcon, spellTexture, classColor.r * 255, classColor.g * 255, classColor.b * 255, missType)
                 else
-                    damageText = string.format("|T%s:0|t %s", classIcon, missType)
+                    damageText = string.format("|T%s:0|t |cff%02x%02x%02x%s|r", classIcon, classColor.r * 255, classColor.g * 255, classColor.b * 255, missType)
                 end
             end
             if damageText then
@@ -83,63 +60,6 @@ local function OnCombatLogEvent(self, event, ...)
         if sourceName == UnitName("player") then
             DEFAULT_CHAT_FRAME:AddMessage(string.format("Event Type: %s", eventType))
         end
-    end
-end
-frame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-frame:SetScript("OnEvent", OnCombatLogEvent)
-
-
-
-
-local function createOptionsPanel()
-    local optionsPanel = CreateFrame("Frame", "DamageBrotherOptionsPanel", UIParent)
-    optionsPanel.name = "DamageBrother"
-
-    local enableSoloCheckbox = CreateFrame("CheckButton", "DamageBrotherEnableSoloCheckbox", optionsPanel, "OptionsCheckButtonTemplate")
-    enableSoloCheckbox:SetPoint("TOPLEFT", 16, -16)
-    enableSoloCheckbox:SetScript("OnClick", function(self)
-        local isChecked = self:GetChecked()
-        if isChecked then
-            PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON)
-            DamageBrotherDB.enableSolo = true
-        else
-            PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_OFF)
-            DamageBrotherDB.enableSolo = false
-        end
-    end)
-
-    enableSoloCheckbox.text = enableSoloCheckbox:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-    enableSoloCheckbox.text:SetPoint("LEFT", enableSoloCheckbox, "RIGHT", 0, 1)
-    enableSoloCheckbox.text:SetText("Enable DamageBrother in Solo")
-
-    function optionsPanel.refresh()
-        enableSoloCheckbox:SetChecked(DamageBrotherDB.enableSolo)
-    end
-
-    optionsPanel.default = function()
-        DamageBrotherDB.enableSolo = false
-        enableSoloCheckbox:SetChecked(false)
-    end
-
-    InterfaceOptions_AddCategory(optionsPanel)
-end
-
-
-
-
-
-local function OnAddonLoadedAndPlayerLogout(self, event, ...)
-    if event == "ADDON_LOADED" then
-        local addonName = ...
-        if addonName == "DamageBrother" then
-            DamageBrotherDB = DamageBrotherDB or { enabled = true, enableSolo = false }
-            if not optionsPanelCreated then
-                createOptionsPanel()
-                optionsPanelCreated = true
-            end
-        end
-    elseif event == "PLAYER_LOGOUT" then
-        -- Save settings here if necessary
     end
 end
 
@@ -155,3 +75,27 @@ frame:SetScript("OnEvent", function(self, event, ...)
         OnAddonLoadedAndPlayerLogout(self, event, ...)
     end
 end)
+
+
+
+local function onCombatLogEventUnfiltered(event, ...)
+    local timestamp, eventType, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags = ...
+    if eventType == "SPELL_DAMAGE" or eventType == "SPELL_PERIODIC_DAMAGE" or eventType == "RANGE_DAMAGE" then
+        local spellId, spellName, spellSchool, baseAmount, overkill, school, resisted, blocked, absorbed, critical, glancing, crushing = select(12, ...)
+        local unitLevel = UnitLevel(destName) or 0 -- Get the level of the target, or assume level 0 if unknown
+        local amount = baseAmount + (unitLevel - 1) * 5 + 10 -- Calculate the damage amount based on level
+        local damageColor = "|cff00ff00" -- Green
+        if amount < 1000 then
+            damageColor = "|cffffff00" -- Yellow
+        elseif amount > 10000 then
+            damageColor = "|cffff0000" -- Red
+        end
+        local targetFrame = TargetFrameToT
+        targetFrame.healthbar.dmgtext:SetTextColor(GameTooltip_UnitColor(targetFrame.unit))
+        targetFrame.healthbar.dmgtext:SetText(damageColor..amount.."|r")
+    end
+end
+
+local frame = CreateFrame("Frame")
+frame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+frame:SetScript("OnEvent", onCombatLogEventUnfiltered)

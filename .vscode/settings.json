@@ -1,0 +1,9 @@
+{
+  "Lua.diagnostics.globals": [
+    "InterfaceOptions_AddCategory",
+    "DEFAULT_CHAT_FRAME",
+    "TargetFrameToT",
+    "GameTooltip_UnitColor",
+    "InterfaceOptionsFrame_OpenToCategory"
+  ]
+}
