@@ -1,4 +1,4 @@
-print "DamageBrother loaded"
+print("DamageBrother loaded")
 
 local frame = CreateFrame("Frame")
 local damageFrame = CreateFrame("ScrollingMessageFrame", nil, UIParent)
@@ -11,6 +11,7 @@ damageFrame:SetFading(true)
 damageFrame:SetFadeDuration(2)
 damageFrame:SetTimeVisible(5)
 damageFrame:SetJustifyH("CENTER")
+
 
 
 
@@ -99,3 +100,33 @@ end
 local frame = CreateFrame("Frame")
 frame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 frame:SetScript("OnEvent", onCombatLogEventUnfiltered)
+
+
+
+
+
+
+
+
+
+
+local function GetClassColor(classFileName)
+    local color = RAID_CLASS_COLORS[classFileName]
+    return color.r, color.g, color.b
+end
+
+local function UpdateFCTColor()
+    local _, classFileName = UnitClass("player")
+    local r, g, b = GetClassColor(classFileName)
+
+    -- Set the color for floatingCombatTextCombatDamage
+    DAMAGE_TEXT_FONT:SetTextColor(r, g, b)
+end
+
+local f = CreateFrame("Frame")
+f:RegisterEvent("PLAYER_LOGIN")
+f:SetScript("OnEvent", function(self, event, ...)
+    if event == "PLAYER_LOGIN" then
+        UpdateFCTColor()
+    end
+end)

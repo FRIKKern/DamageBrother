@@ -4,6 +4,25 @@
     "DEFAULT_CHAT_FRAME",
     "TargetFrameToT",
     "GameTooltip_UnitColor",
-    "InterfaceOptionsFrame_OpenToCategory"
+    "InterfaceOptionsFrame_OpenToCategory",
+    "ReloadUI",
+    "SlashCmdList",
+    "hash_SlashCmdList",
+    "NORMAL_FONT_COLOR",
+    "GameFontNormal",
+    "GameFontHighlight",
+    "ACCEPT",
+    "CANCEL",
+    "GameFontHighlightLarge",
+    "GameFontHighlightSmall",
+    "NORMAL_FONT_COLOR_CODE",
+    "FONT_COLOR_CODE_CLOSE",
+    "SELECTED_CHAT_FRAME",
+    "DAMAGE_TEXT_FONT",
+    "CLASS_ICON_TCOORDS",
+    "CombatTextFont",
+    "STANDARD_TEXT_FONT",
+    "CombatTextFontOutline",
+    "COMBAT_TEXT_LOCATIONS"
   ]
 }
