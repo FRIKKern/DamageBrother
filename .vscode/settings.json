@@ -23,6 +23,8 @@
     "CombatTextFont",
     "STANDARD_TEXT_FONT",
     "CombatTextFontOutline",
-    "COMBAT_TEXT_LOCATIONS"
+    "COMBAT_TEXT_LOCATIONS",
+    "WorldFrame",
+    "class"
   ]
 }

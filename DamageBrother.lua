@@ -2,6 +2,7 @@ print("DamageBrother loaded")
 
 local frame = CreateFrame("Frame")
 local damageFrame = CreateFrame("ScrollingMessageFrame", nil, UIParent)
+local activeDamageTexts = {}
 
 damageFrame:SetPoint("CENTER", 0, 100)
 damageFrame:SetSize(400, 200)
@@ -11,6 +12,57 @@ damageFrame:SetFading(true)
 damageFrame:SetFadeDuration(2)
 damageFrame:SetTimeVisible(5)
 damageFrame:SetJustifyH("CENTER")
+
+
+
+
+
+
+
+
+
+local function SpawnDamageText(nameplate, text, class)
+    local r, g, b = GetClassColor(class)
+    local damageText = nameplate:CreateFontString(nil, "OVERLAY")
+    damageText:SetFont("Fonts\\FRIZQT__.TTF", 14, "OUTLINE")
+    damageText:SetText(text)
+    damageText:SetTextColor(r, g, b)
+    damageText:SetPoint("BOTTOM", nameplate, "TOP", 0, 0)
+    damageText.startTime = GetTime()
+    table.insert(activeDamageTexts, damageText)
+end
+
+local function UpdateDamageTexts(elapsed)
+    for i = #activeDamageTexts, 1, -1 do
+        local damageText = activeDamageTexts[i]
+        local timeSinceStart = GetTime() - damageText.startTime
+        local progress = timeSinceStart / 1 -- 1 second animation duration
+
+        if progress >= 1 then
+            damageText:Hide()
+            table.remove(activeDamageTexts, i)
+        else
+            local yOffset = 30 * progress -- 30 is the vertical distance the text will move
+            local alpha = 1 - progress
+            damageText:SetPoint("BOTTOM", damageText:GetParent(), "TOP", 0, yOffset)
+            damageText:SetAlpha(alpha)
+        end
+    end
+end
+
+
+local animationFrame = CreateFrame("Frame")
+animationFrame:SetScript("OnUpdate", function(self, elapsed)
+    UpdateDamageTexts(elapsed)
+end)
+
+
+local animationFrame = CreateFrame("Frame")
+animationFrame:SetScript("OnUpdate", function(self, elapsed)
+    UpdateDamageTexts(elapsed)
+end)
+
+
 
 
 
@@ -52,9 +104,16 @@ local function OnCombatLogEvent(self, event, ...)
                     damageText = string.format("|T%s:0|t |cff%02x%02x%02x%s|r", classIcon, classColor.r * 255, classColor.g * 255, classColor.b * 255, missType)
                 end
             end
-            if damageText then
-                damageFrame:AddMessage(damageText, 0, 0, 1)
-            end
+if damageText then
+    damageFrame:AddMessage(damageText, 0, 0, 1)
+    if sourceName == UnitName("player") and (eventType == "SPELL_DAMAGE" or eventType == "SPELL_PERIODIC_DAMAGE" or eventType == "RANGE_DAMAGE" or eventType == "SWING_DAMAGE") then
+        local nameplate = C_NamePlate.GetNamePlateForUnit("target")
+        if nameplate then
+            SpawnDamageText(nameplate, amount, class) -- Pass the class parameter
+        end
+    end
+end
+                
         end
 
         -- Log the event type for all your damage events
@@ -130,3 +189,9 @@ f:SetScript("OnEvent", function(self, event, ...)
         UpdateFCTColor()
     end
 end)
+
+
+
+
+
+
