@@ -3,6 +3,12 @@ local optionsPanelCreated = false
 function createOptionsPanel()
     local optionsPanel = CreateFrame("Frame", "DamageBrotherOptionsPanel", UIParent)
     optionsPanel.name = "DamageBrother"
+    local worldModeCheckbox = CreateFrame("CheckButton", "DamageBrotherWorldModeCheckbox", optionsPanel, "OptionsCheckButtonTemplate")
+worldModeCheckbox:SetPoint("TOPLEFT", enableSoloCheckbox, "BOTTOMLEFT", 0, -10)
+
+worldModeCheckbox.text = worldModeCheckbox:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+worldModeCheckbox.text:SetPoint("LEFT", worldModeCheckbox, "RIGHT", 0, 1)
+worldModeCheckbox.text:SetText("Enable DamageBrother in World")
 
     local enableSoloCheckbox = CreateFrame("CheckButton", "DamageBrotherEnableSoloCheckbox", optionsPanel, "OptionsCheckButtonTemplate")
     enableSoloCheckbox:SetPoint("TOPLEFT", 16, -16)
@@ -26,7 +32,7 @@ function createOptionsPanel()
     end
 
     optionsPanel.default = function()
-        DamageBrotherDB.enableSolo = false
+        DamageBrotherDB = DamageBrotherDB or { enabled = true, enableSolo = false, worldMode = false }
         enableSoloCheckbox:SetChecked(false)
     end
 
@@ -51,4 +57,5 @@ function OnAddonLoadedAndPlayerLogout(self, event, ...)
         -- Save settings here if necessary
     end
 end
+
 
