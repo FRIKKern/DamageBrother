@@ -25,6 +25,7 @@
     "CombatTextFontOutline",
     "COMBAT_TEXT_LOCATIONS",
     "WorldFrame",
-    "class"
+    "class",
+    "DAMAGE"
   ]
 }

@@ -4,8 +4,8 @@ local frame = CreateFrame("Frame")
 local damageFrame = CreateFrame("ScrollingMessageFrame", nil, UIParent)
 local activeDamageTexts = {}
 
-damageFrame:SetPoint("CENTER", 0, 100)
-damageFrame:SetSize(400, 200)
+damageFrame:SetPoint("LEFT", 0, 100)
+damageFrame:SetSize(100, 200)
 damageFrame:SetFont("Fonts\\FRIZQT__.TTF", 14, "OUTLINE")
 damageFrame:SetMaxLines(10)
 damageFrame:SetFading(true)
@@ -47,8 +47,27 @@ local function UpdateDamageTexts(elapsed)
             damageText:SetPoint("BOTTOM", damageText:GetParent(), "TOP", 0, yOffset)
             damageText:SetAlpha(alpha)
         end
+        if damageText then
+            damageFrame:AddMessage(damageText, 0, 0, 1)
+            if (sourceName == UnitName("player") or isPlayerInParty(sourceName)) and (eventType == "SPELL_DAMAGE" or eventType == "SPELL_PERIODIC_DAMAGE" or eventType == "RANGE_DAMAGE" or eventType == "SWING_DAMAGE") then
+                local unit = "target"
+                if isPlayerInParty(sourceName) then
+                    for i = 1, 4 do -- Assuming a maximum of 5 players in the party, including the player
+                        if sourceName == UnitName("party" .. i) then
+                            unit = "party" .. i .. "target"
+                            break
+                        end
+                    end
+                end
+    
+                local nameplate = C_NamePlate.GetNamePlateForUnit(unit)
+                if nameplate then
+                    SpawnDamageText(nameplate, amount, class) -- Pass the class parameter
+                end
+            end
+        end
     end
-end
+    end
 
 
 local animationFrame = CreateFrame("Frame")
@@ -71,6 +90,7 @@ local function OnCombatLogEvent(self, event, ...)
     local timestamp, eventType, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags, arg12, arg13, arg14, arg15, arg16 = CombatLogGetCurrentEventInfo()
 
     if eventType == "SPELL_DAMAGE" or eventType == "SPELL_PERIODIC_DAMAGE" or eventType == "SPELL_BUILDING_DAMAGE" or eventType == "RANGE_DAMAGE" or eventType == "SWING_DAMAGE" or eventType == "ENVIRONMENTAL_DAMAGE" or eventType == "SWING_MISSED" or eventType == "SPELL_MISSED" or eventType == "RANGE_MISSED" then
+
         local isPartyMember, class = isPlayerInParty(sourceName)
         if isPartyMember or DamageBrotherDB.enableSolo then
             local amount, missType, spellId, spellTexture
@@ -104,15 +124,26 @@ local function OnCombatLogEvent(self, event, ...)
                     damageText = string.format("|T%s:0|t |cff%02x%02x%02x%s|r", classIcon, classColor.r * 255, classColor.g * 255, classColor.b * 255, missType)
                 end
             end
-if damageText then
-    damageFrame:AddMessage(damageText, 0, 0, 1)
-    if sourceName == UnitName("player") and (eventType == "SPELL_DAMAGE" or eventType == "SPELL_PERIODIC_DAMAGE" or eventType == "RANGE_DAMAGE" or eventType == "SWING_DAMAGE") then
-        local nameplate = C_NamePlate.GetNamePlateForUnit("target")
-        if nameplate then
-            SpawnDamageText(nameplate, amount, class) -- Pass the class parameter
-        end
-    end
-end
+            if damageText then
+                damageFrame:AddMessage(damageText, 0, 0, 1)
+                if (sourceName == UnitName("player") or isPlayerInParty(sourceName)) and (eventType == "SPELL_DAMAGE" or eventType == "SPELL_PERIODIC_DAMAGE" or eventType == "RANGE_DAMAGE" or eventType == "SWING_DAMAGE") then
+                    local unit = "target"
+                    if isPlayerInParty(sourceName) then
+                        for i = 1, 4 do -- Assuming a maximum of 5 players in the party, including the player
+                            if sourceName == UnitName("party" .. i) then
+                                unit = "party" .. i .. "target"
+                                break
+                            end
+                        end
+                    end
+        
+                    local nameplate = C_NamePlate.GetNamePlateForUnit(unit)
+                    if nameplate then
+                        SpawnDamageText(nameplate, amount, class) -- Pass the class parameter
+                    end
+                end
+            end
+        
                 
         end
 
