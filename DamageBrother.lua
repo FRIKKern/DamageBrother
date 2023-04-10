@@ -1,3 +1,44 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 print("DamageBrother loaded")
 
 local frame = CreateFrame("Frame")
@@ -19,16 +60,16 @@ damageFrame:SetJustifyH("CENTER")
 
 
 
-
-
 local function SpawnDamageText(nameplate, text, class)
     local r, g, b = GetClassColor(class)
     local damageText = nameplate:CreateFontString(nil, "OVERLAY")
     damageText:SetFont("Fonts\\FRIZQT__.TTF", 14, "OUTLINE")
     damageText:SetText(text)
     damageText:SetTextColor(r, g, b)
-    damageText:SetPoint("BOTTOM", nameplate, "TOP", 0, 0)
+    local xOffset = math.random(-30, 30) -- Set a random initial horizontal offset
+    damageText:SetPoint("BOTTOM", nameplate, "TOP", xOffset, 0)
     damageText.startTime = GetTime()
+    damageText.xOffset = xOffset -- Store the horizontal offset in the damageText object
     table.insert(activeDamageTexts, damageText)
 end
 
@@ -44,30 +85,14 @@ local function UpdateDamageTexts(elapsed)
         else
             local yOffset = 30 * progress -- 30 is the vertical distance the text will move
             local alpha = 1 - progress
-            damageText:SetPoint("BOTTOM", damageText:GetParent(), "TOP", 0, yOffset)
+            damageText:SetPoint("BOTTOM", damageText:GetParent(), "TOP", damageText.xOffset, yOffset)
             damageText:SetAlpha(alpha)
         end
-        if damageText then
-            damageFrame:AddMessage(damageText, 0, 0, 1)
-            if (sourceName == UnitName("player") or isPlayerInParty(sourceName)) and (eventType == "SPELL_DAMAGE" or eventType == "SPELL_PERIODIC_DAMAGE" or eventType == "RANGE_DAMAGE" or eventType == "SWING_DAMAGE") then
-                local unit = "target"
-                if isPlayerInParty(sourceName) then
-                    for i = 1, 4 do -- Assuming a maximum of 5 players in the party, including the player
-                        if sourceName == UnitName("party" .. i) then
-                            unit = "party" .. i .. "target"
-                            break
-                        end
-                    end
-                end
-    
-                local nameplate = C_NamePlate.GetNamePlateForUnit(unit)
-                if nameplate then
-                    SpawnDamageText(nameplate, amount, class) -- Pass the class parameter
-                end
-            end
-        end
     end
-    end
+end
+
+
+
 
 
 local animationFrame = CreateFrame("Frame")
